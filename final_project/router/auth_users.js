@@ -62,7 +62,7 @@ regd_users.post("/login", (req, res) => {
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
     const isbn = req.params.isbn;
-    const review = req.query.review;
+    const review = req.body.review;
 
     // Check if book exists
     if (!books[isbn]) {
@@ -71,19 +71,39 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
 
     // Check if review is provided
     if (!review) {
-        return res.status(400).json({ message: "Review is required as query parameter." });
+        return res.status(400).json({ message: "Review is required in request body." });   
     }
 
-    // Get username from session (decoded from JWT by middleware in index.js)
     const username = req.user.username;
 
-    // Add or update the review
     books[isbn].reviews[username] = review;
 
     return res.status(200).json({
         message: "Review added/updated successfully.",
         reviews: books[isbn].reviews
     });
+});
+
+// Delete book review:
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+    const isbn = req.params.isbn;
+
+    // Check if the book exists
+    if (!books[isbn]) {
+        return res.status(404).json({ message: "Book not found." });
+    }
+
+    const username = req.user.username;
+
+    // Check if the user has reviewed this book
+    if (!books[isbn].reviews[username]) {
+        return res.status(404).json({ message: "No review found for this user to delete." });
+    }
+
+    // Delete the user's review
+    delete books[isbn].reviews[username];
+
+    return res.status(200).json({ message: "Review deleted successfully." });
 });
 
 
