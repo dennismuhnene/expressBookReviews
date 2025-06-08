@@ -22,32 +22,30 @@ public_users.post("/register", (req,res) => {
     return res.status(200).json({ message: "User successfully registered. Now you can login." });
 });
 
-// Get the book list available in the shop using Promise with Axios
-public_users.get('/', function (req, res) {
-    new Promise((resolve, reject) => {
-        try {
-            resolve(books);
-        } catch (err) {
-            reject(err);
-        }
-    })
-    .then(bookList => res.send(JSON.stringify(bookList, null, 4)))
-    .catch(err => res.status(500).json({ message: "Failed to retrieve books." }));
+// Get the book list available in the shop using async/await
+public_users.get('/', async function (req, res) {
+    try {
+        const bookList = books; // Simulating async fetch
+        res.send(JSON.stringify(bookList, null, 4));
+    } catch (err) {
+        res.status(500).json({ message: "Failed to retrieve books." });
+    }
 });
 
-// Get book details based on ISBN using async/await
-public_users.get('/isbn/:isbn', async function (req, res) {
+// Get book details based on ISBN using Promise
+public_users.get('/isbn/:isbn', function (req, res) {
     const isbn = req.params.isbn;
-    try {
+
+    new Promise((resolve, reject) => {
         const book = books[isbn];
         if (book) {
-            res.json(book);
+            resolve(book);
         } else {
-            res.status(404).json({ message: "Book not found for the given ISBN." });
+            reject("Book not found for the given ISBN.");
         }
-    } catch (err) {
-        res.status(500).json({ message: "Internal server error." });
-    }
+    })
+    .then(data => res.json(data))
+    .catch(error => res.status(404).json({ message: error }));
 });
 
 // Get book details based on author using Promise with Axios
