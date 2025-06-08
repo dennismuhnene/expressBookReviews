@@ -4,44 +4,25 @@ let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
 
-
-// Register a new user
-app.post("/register", (req, res) => {
+// Register new user:
+public_users.post("/register", (req,res) => {
     const username = req.body.username;
     const password = req.body.password;
 
     // Check if both username and password are provided
-    if (username && password) {
-        // Check if the user does not already exist
-        if (!doesExist(username)) {
-            // Add the new user to the users array
-            users.push({"username": username, "password": password});
-            return res.status(200).json({message: "User successfully registered. Now you can login"});
-        } else {
-            return res.status(409).json({message: "User already exists!"});  // Corrected to 409 Conflict
-        }
+    if (!username || !password) {
+        return res.status(400).json({ message: "Username and password are required." });
     }
-    // Return error if username or password is missing
-    return res.status(400).json({message: "Unable to register user."});      // Corrected to 400 Bad Request
+
+    // Check if the user already exists
+    if (isValid(username)) {
+        return res.status(409).json({ message: "User already exists!" });
+    }
+
+    // Register new user
+    users.push({ username, password });
+    return res.status(200).json({ message: "User successfully registered. Now you can login." });
 });
-
-// Utility function 1:
-// Check if a user with the given username already exists
-const doesExist = (username) => {
-    let userswithsamename = users.filter((user) => {
-        return user.username === username;
-    });
-    return userswithsamename.length > 0;
-}
-
-// Utility function 2:
-// Check if the user with the given username and password exists
-const authenticatedUser = (username, password) => {
-    let validusers = users.filter((user) => {
-        return (user.username === username && user.password === password);
-    });
-    return validusers.length > 0;
-}
 
 
 

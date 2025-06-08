@@ -13,7 +13,7 @@ app.use("/customer",session({secret:"fingerprint_customer",resave: true, saveUni
 //Middleware to authenticate requests to the "/customer/auth/*" endpoint
 app.use("/customer/auth/*", function auth(req,res,next){
     if (req.session.authorization){
-        let token = req.session.authorization['accesstoken'];
+        let token = req.session.authorization['accessToken'];
 
         //verify JWT token
         jwt.verify(token, "access", (err, user) => {
